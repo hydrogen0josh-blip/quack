@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Found Dog - Pet Rescue Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .pulse-animation { animation: pulse-ring 2s infinite ease-in-out; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 pb-12 font-sans">
+
+  <!-- Top Navigation / Mode Switcher -->
+  <header class="bg-amber-500 text-white shadow-md">
+    <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2 font-bold text-lg">
+        <i class="fa-solid font-bold fa-paw"></i>
+        <span>PetTag Protect</span>
+      </div>
+      <button id="toggleViewBtn" onclick="toggleView()" class="bg-amber-600 hover:bg-amber-700 text-xs px-3 py-1.5 rounded-full font-semibold transition flex items-center gap-1.5 border border-amber-400">
+        <i class="fa-solid fa-qrcode"></i>
+        <span id="toggleText">Owner Dashboard</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto px-4 mt-4">
+
+    <!-- PUBLIC VIEW: FOUND DOG PROFILE -->
+    <div id="publicView" class="space-y-4">
+      
+      <!-- Alert Banner -->
+      <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg shadow-sm flex items-start space-x-3">
+        <i class="fa-solid fa-triangle-exclamation text-amber-500 text-xl mt-0.5"></i>
+        <div>
+          <h2 class="font-bold text-amber-900">Found This Dog?</h2>
+          <p class="text-sm text-amber-800">Thank you for helping! Please use the options below to contact the owner or share your current location.</p>
+        </div>
+      </div>
+
+      <!-- Dog Profile Card -->
+      <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-slate-200">
+        <div class="relative h-64 bg-slate-200">
+          <img id="displayPhoto" src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800" alt="Dog Photo" class="w-full h-full object-cover">
+          <span id="displayStatus" class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow">
+            Lost / Reward Offered
+          </span>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <div>
+            <div class="flex justify-between items-start">
+              <h1 id="displayName" class="text-2xl font-extrabold text-slate-900">Buddy</h1>
+              <span id="displayBreed" class="text-xs bg-slate-100 text-slate-600 font-semibold px-2.5 py-1 rounded-md border border-slate-200">Golden Retriever</span>
+            </div>
+            <p id="displayMicrochip" class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-microchip mr-1"></i> Microchipped: 985141002938471</p>
+          </div>
+
+          <!-- Medical / Temperament Alerts -->
+          <div id="displayAlerts" class="space-y-2">
+            <div class="flex items-center text-xs text-rose-700 bg-rose-50 p-2.5 rounded-lg border border-rose-200">
+              <i class="fa-solid fa-notes-medical mr-2 text-sm text-rose-500"></i>
+              <span><strong>Medical Needs:</strong> Requires daily insulin. Friendly but nervous around loud noises.</span>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            <a id="callBtn" href="tel:+1234567890" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-sm text-sm transition">
+              <i class="fa-solid fa-phone"></i>
+              <span>Call Owner</span>
+            </a>
+            <a id="smsBtn" href="sms:+1234567890" class="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-4 rounded-xl shadow-sm text-sm transition">
+              <i class="fa-solid fa-comment-sms"></i>
+              <span>Text Owner</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOCATION SHARING MODULE -->
+      <div class="bg-white rounded-2xl p-5 shadow-md border border-slate-200 space-y-4">
+        <div class="flex items-center space-x-3">
+          <div class="p-2.5 bg-indigo-100 text-indigo-600 rounded-xl">
+            <i class="fa-solid fa-location-crosshairs text-xl"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900">Share Current GPS Location</h3>
+            <p class="text-xs text-slate-500">Sends your precise coordinates directly to the owner.</p>
+          </div>
+        </div>
+
+        <button id="getLocationBtn" onclick="getGPSLocation()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-location-dot pulse-animation"></i>
+          <span>Send GPS Location to Owner</span>
+        </button>
+
+        <!-- Location Output Container -->
+        <div id="locationResult" class="hidden space-y-3 pt-2 border-t border-slate-100">
+          <div class="bg-slate-50 p-3 rounded-lg text-xs space-y-1">
+            <p class="text-slate-500">Location captured:</p>
+            <p id="coordsText" class="font-mono font-semibold text-slate-800"></p>
+          </div>
+
+          <p class="text-xs font-semibold text-slate-600">Choose how to send:</p>
+          <div class="grid grid-cols-2 gap-2">
+            <a id="whatsappLocBtn" target="_blank" class="flex items-center justify-center gap-1.5 bg-green-500 text-white py-2 px-3 rounded-lg text-xs font-bold hover:bg-green-600">
+              <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
+            </a>
+            <a id="smsLocBtn" class="flex items-center justify-center gap-1.5 bg-blue-500 text-white py-2 px-3 rounded-lg text-xs font-bold hover:bg-blue-600">
+              <i class="fa-solid fa-message text-sm"></i> SMS Text
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OWNER DASHBOARD / QR GENERATOR -->
+    <div id="ownerView" class="hidden space-y-4">
+      <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200 space-y-4">
+        <h2 class="font-extrabold text-xl text-slate-900">Dog Tag & QR Generator</h2>
+        <p class="text-xs text-slate-500">Update dog details below to instantly generate a printable QR Code tag.</p>
+
+        <form id="dogForm" onsubmit="event.preventDefault(); updateProfile();" class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Dog Name</label>
+            <input type="text" id="inputName" value="Buddy" class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Owner Phone Number</label>
+            <input type="tel" id="inputPhone" value="+1234567890" class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Breed / Info</label>
+            <input type="text" id="inputBreed" value="Golden Retriever" class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Microchip ID (Optional)</label>
+            <input type="text" id="inputChip" value="985141002938471" class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Medical/Behavior Notes</label>
+            <textarea id="inputNotes" rows="2" class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-amber-500 focus:outline-none">Requires daily insulin. Friendly but nervous around loud noises.</textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Target Hosting URL (for QR Code)</label>
+            <input type="url" id="inputHostUrl" value="https://my-dog-tag.netlify.app" placeholder="https://yourdomain.com" class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+          </div>
+
+          <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl transition shadow">
+            Save Profile & Generate QR Code
+          </button>
+        </form>
+      </div>
+
+      <!-- Generated QR Code Section -->
+      <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200 text-center space-y-4">
+        <h3 class="font-bold text-slate-900">Your Printable QR Tag</h3>
+        <div class="flex justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <div id="qrcode"></div>
+        </div>
+        <p class="text-xs text-slate-500">Scan this code with any smartphone camera to test access to the profile.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let dogData = {
+      name: "Buddy",
+      phone: "+1234567890",
+      breed: "Golden Retriever",
+      chip: "985141002938471",
+      notes: "Requires daily insulin. Friendly but nervous around loud noises."
+    };
+
+    let qrCodeObj = null;
+
+    function renderQRCode(url) {
+      const container = document.getElementById("qrcode");
+      container.innerHTML = "";
+      qrCodeObj = new QRCode(container, {
+        text: url,
+        width: 180,
+        height: 180,
+        colorDark: "#0f172a",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    function toggleView() {
+      const pubView = document.getElementById('publicView');
+      const ownView = document.getElementById('ownerView');
+      const toggleText = document.getElementById('toggleText');
+
+      if (pubView.classList.contains('hidden')) {
+        pubView.classList.remove('hidden');
+        ownView.classList.add('hidden');
+        toggleText.textContent = "Owner Dashboard";
+      } else {
+        pubView.classList.add('hidden');
+        ownView.classList.remove('hidden');
+        toggleText.textContent = "Preview Public Page";
+        renderQRCode(document.getElementById('inputHostUrl').value || window.location.href);
+      }
+    }
+
+    function updateProfile() {
+      dogData.name = document.getElementById('inputName').value;
+      dogData.phone = document.getElementById('inputPhone').value;
+      dogData.breed = document.getElementById('inputBreed').value;
+      dogData.chip = document.getElementById('inputChip').value;
+      dogData.notes = document.getElementById('inputNotes').value;
+
+      document.getElementById('displayName').textContent = dogData.name;
+      document.getElementById('displayBreed').textContent = dogData.breed;
+      document.getElementById('displayMicrochip').innerHTML = `<i class="fa-solid fa-microchip mr-1"></i> Microchipped: ${dogData.chip}`;
+      document.getElementById('callBtn').href = `tel:${dogData.phone}`;
+      document.getElementById('smsBtn').href = `sms:${dogData.phone}`;
+
+      const targetUrl = document.getElementById('inputHostUrl').value || window.location.href;
+      renderQRCode(targetUrl);
+      alert('Profile updated and QR code generated!');
+    }
+
+    function getGPSLocation() {
+      const btn = document.getElementById('getLocationBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Fetching Location...`;
+
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude.toFixed(6);
+            const lng = position.coords.longitude.toFixed(6);
+            const mapLink = `https://maps.google.com/?q=${lat},${lng}`;
+            
+            document.getElementById('coordsText').innerText = `Lat: ${lat}, Lng: ${lng}`;
+            
+            const message = encodeURIComponent(`Hello! I found your dog ${dogData.name}. Here is my current GPS location: ${mapLink}`);
+            
+            document.getElementById('whatsappLocBtn').href = `https://wa.me/${dogData.phone.replace(/[^0-9]/g, '')}?text=${message}`;
+            document.getElementById('smsLocBtn').href = `sms:${dogData.phone}?body=${message}`;
+
+            document.getElementById('locationResult').classList.remove('hidden');
+            btn.innerHTML = `<i class="fa-solid fa-check"></i> Location Found!`;
+            btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
+          },
+          (error) => {
+            alert("Unable to retrieve location. Please check browser permissions.");
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-location-dot"></i> Send GPS Location to Owner`;
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      } else {
+        alert("Geolocation is not supported by your browser.");
+      }
+    }
+  </script>
+</body>
+</html>
